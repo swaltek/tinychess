@@ -8,11 +8,9 @@ body {
 }
 
 .square {
-  height: 2vw;
-  width: 2vw;
+  height: 8vh;
+  width: 8vh;
   position: relative;
-
-  text-align: center;
 }
 
 .square.dark {
@@ -24,8 +22,8 @@ body {
 }
 
 .piece {
-  height: 70%;
-  width: 70%;
-  padding: 15%
+  height: 85%;
+  width: 85%;
+  padding: 7.5%;
 }
 
