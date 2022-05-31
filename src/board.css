@@ -1,3 +1,7 @@
+:root {
+  --light-square: #f8dfaf;
+  --dark-square: #a26f45;
+}
 body {
   margin: 0;
   font-family: 'DejaVu Sans', FreeSerif, Quivira, sans-serif;
@@ -14,11 +18,11 @@ body {
 }
 
 .square.dark {
-  background-color: Peru;
+  background-color: var(--dark-square);
 }
 
 .square.light {
-  background-color: BurlyWood;
+  background-color: var(--light-square);
 }
 
 .piece {

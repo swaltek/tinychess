@@ -1,8 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
-import { Grommet, PageContent } from 'grommet';
-import { Page, Box } from 'grommet';
+import { Grommet, Page, PageContent } from 'grommet';
+
+import { Box, Button } from 'grommet';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from 'grommet';
 
 import { Chess } from 'chess.js';
@@ -26,7 +27,7 @@ const PGN_SAMPLE = [
   '23. Ne5 Rae8 24. Bxf7+ Rxf7 25. Nxf7 Rxe1+ 26. Qxe1 Kxf7 27. Qe3 Qg5 28. Qxg5',
   'hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33. f3 Bc8 34. Kf2 Bf5',
   '35. Ra7 g6 36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5 40. Rd6 Kc5 41. Ra6',
-  'Nf2 42. g4 Bd3 43. Re6 1/2-1/2"',
+  'Nf2 42. g4 Bd3 43. Re6 1/2-1/2',
 ];
 
 const PGN_SAMPLE_2 = [
@@ -54,22 +55,33 @@ const PGN_SAMPLE_2 = [
 
 const App = () => {
   const [current, setCurrent] = useState(null);
+  const [history, setHistory] = useState([]);
   const chess = useRef(null);
 
   useEffect( () => {
     if( chess.current !== null ) return;
     let chessInstance = new Chess();
     const sucess = chessInstance.load_pgn(PGN_SAMPLE_2.join('\n'));
+
     chess.current = chessInstance;
-    setCurrent(1);
+    const history = chessInstance.history();
+    setHistory( history );
+    setCurrent( history.length - 1 );
+
     console.log(sucess , '\n' , chess.current.ascii());
   });
 
+  const handleNextMove = () => {
+    setCurrent(current + 1);
+  }
+  const handlePrevMove = () => {
+    setCurrent(current - 1);
+  }
   const board = chess.current != null ? chess.current.board() : null;
   console.log("board", board);
 
   return (
-    <Grommet plain>
+    <Grommet plain cssVars={true}>
       <Page kind="wide">
         <PageContent>
           <h1>{`Welcome to tiny chess!`}</h1>
@@ -77,9 +89,12 @@ const App = () => {
             <Box >
               <Board boardState={board} />
             </Box>
-            <Box>
-              <MoveList />
-            </Box>
+            <MoveList
+              history={history}
+              current={current}
+              onNextMove={ handleNextMove }
+              onPrevMove={ handlePrevMove }
+            />
           </Box>
         </PageContent>
       </Page>
@@ -87,43 +102,99 @@ const App = () => {
   )
 }
 
-const MoveList = () => {
+const MoveList = (
+  {history, current,
+    onNextMove = () => {},
+    onPrevMove = () => {}
+  }) => {
+  const historyRows = () => {
+    let rows = [];
+    for(let t = 0, i = 0; i < history.length; t++, i += 2){
+      let cells = [];
+      cells.push(<TableCell>
+        { i + 1}
+      </TableCell>);
+
+      const isLightMoveCurrent = current === i;
+      const lightMoveInner = history[i];
+      cells.push(
+        <TableCell
+          style={{
+            backgroundColor: isLightMoveCurrent ? 'var(--dark-6)' : 'inherit',
+          }}
+        >
+          {lightMoveInner}
+        </TableCell>);
+
+      const isDarkMoveCurrent = current === i + 1;
+      const darkMoveInner = history[i + 1] || null;
+      cells.push(
+        <TableCell
+          style={{
+            backgroundColor: isDarkMoveCurrent ? 'var(--dark-6)' : 'inherit',
+          }}
+        >
+          {darkMoveInner}
+        </TableCell>);
+
+      const containsCurrent = isLightMoveCurrent || isDarkMoveCurrent;
+      rows.push(
+              <TableRow
+                style={{
+                  backgroundColor: containsCurrent ? 'var(--light-4)' : 'white',
+                }}
+              >
+                {cells}
+              </TableRow>
+          );
+    }
+    return rows;
+  }
+
   return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableCell scope="col">
-              Turn
-            </TableCell>
-            <TableCell scope="col">
-              Light Turn
-            </TableCell>
-            <TableCell scope="col">
-              Dark Turn
-            </TableCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>
-              1.
-            </TableCell>
-            <TableCell>
-              e4
-            </TableCell>
-            <TableCell>
-              d4
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <Box>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableCell scope="col">
+                <strong>Turn</strong>
+              </TableCell>
+              <TableCell scope="col">
+                <strong>Light Turn</strong>
+              </TableCell>
+              <TableCell scope="col">
+                <strong>Dark Turn</strong>
+              </TableCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+              { historyRows() }
+          </TableBody>
+        </Table>
+        <Box
+          justify='center'
+          border="top"
+          direction="row"
+          gap="small"
+          pad="xsmall"
+        >
+          <Button secondary 
+            label="<"
+            onClick={() => onPrevMove()}
+          />
+          <Button secondary 
+            label=">"
+            onClick={() => onNextMove()}
+          />
+        </Box>
+      </Box>
   );
 }
 
 const Board = ({ boardState }) => {
   const board = boardState || new Chess().board();
-  let boardElements = [];
 
+  let boardElements = [];
   let columnLabels = [];
   columnLabels.push(<th key="LabelCol"> </th>); // empty column where row labels will be
   for(let col = 0; col < 8; col++) {
