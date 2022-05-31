@@ -72,10 +72,14 @@ const App = () => {
   });
 
   const handleNextMove = () => {
-    setCurrent(current + 1);
+    if( current < history.length - 1) {
+      setCurrent(current + 1);
+    }
   }
   const handlePrevMove = () => {
-    setCurrent(current - 1);
+    if( current > 0) {
+      setCurrent(current - 1);
+    }
   }
   const board = chess.current != null ? chess.current.board() : null;
   console.log("board", board);
