@@ -73,12 +73,32 @@ const App = () => {
 
   const handleNextMove = () => {
     if( current < history.length - 1) {
-      setCurrent(current + 1);
+      const newHistoryIndex = current + 1;
+      setCurrent(newHistoryIndex);
+      chess.current.move(history[newHistoryIndex])
     }
   }
   const handlePrevMove = () => {
     if( current > 0) {
       setCurrent(current - 1);
+      chess.current.undo();
+    }
+  }
+
+  const handleMoveClick = (moveIndex: number) => {
+    console.log('moveClick', moveIndex);
+    if( current > moveIndex) {
+      for(let i = moveIndex; i < current; i++ ){
+        chess.current.undo();
+      }
+      setCurrent(moveIndex);
+    }
+    if( current < moveIndex) {
+      for(let newIndex = current + 1; newIndex <= moveIndex; newIndex++ ){
+        console.log('newIndex', newIndex);
+        chess.current.move(history[newIndex]);
+      }
+      setCurrent(moveIndex);
     }
   }
   const board = chess.current != null ? chess.current.board() : null;
@@ -98,6 +118,7 @@ const App = () => {
               current={current}
               onNextMove={ handleNextMove }
               onPrevMove={ handlePrevMove }
+              onMoveClick={ handleMoveClick }
             />
           </Box>
         </PageContent>
@@ -109,7 +130,8 @@ const App = () => {
 const MoveList = (
   {history, current,
     onNextMove = () => {},
-    onPrevMove = () => {}
+    onPrevMove = () => {},
+    onMoveClick = (_: number ) => {}
   }) => {
   const historyRows = () => {
     let rows = [];
@@ -127,7 +149,7 @@ const MoveList = (
             backgroundColor: isLightMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
         >
-          {lightMoveInner}
+          <Button onClick={() => onMoveClick(i)}> {lightMoveInner} </ Button>
         </TableCell>);
 
       const isDarkMoveCurrent = current === i + 1;
@@ -138,7 +160,7 @@ const MoveList = (
             backgroundColor: isDarkMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
         >
-          {darkMoveInner}
+          <Button onClick={() => onMoveClick(i + 1)}> {darkMoveInner} </ Button>
         </TableCell>);
 
       const containsCurrent = isLightMoveCurrent || isDarkMoveCurrent;
