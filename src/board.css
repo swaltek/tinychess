@@ -7,6 +7,10 @@ body {
   font-family: 'DejaVu Sans', FreeSerif, Quivira, sans-serif;
 }
 
+.board {
+  display: inline-block;
+}
+
 .board th{
   font-size: 1.5em;
 }

@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import { Grommet, Page, PageContent } from 'grommet';
 
-import { Box, Button } from 'grommet';
-import { Table, TableHeader, TableBody, TableRow, TableCell } from 'grommet';
+import { Grid, Box, Button } from 'grommet';
 
 import { Chess } from 'chess.js';
 
@@ -79,7 +78,7 @@ const App = () => {
     }
   }
   const handlePrevMove = () => {
-    if( current > 0) {
+    if( current > -1) {
       setCurrent(current - 1);
       chess.current.undo();
     }
@@ -109,17 +108,22 @@ const App = () => {
       <Page kind="wide">
         <PageContent>
           <h1>{`Welcome to tiny chess!`}</h1>
-          <Box direction="row" alignSelf='center'>
-            <Box >
-              <Board boardState={board} />
+          <Box
+            direction='row'
+            justify='center'
+          >
+            <Board boardState={board} />
+            <Box
+              width='medium'
+            >
+              <MoveList
+                history={history}
+                current={current}
+                onNextMove={ handleNextMove }
+                onPrevMove={ handlePrevMove }
+                onMoveClick={ handleMoveClick }
+              />
             </Box>
-            <MoveList
-              history={history}
-              current={current}
-              onNextMove={ handleNextMove }
-              onPrevMove={ handlePrevMove }
-              onMoveClick={ handleMoveClick }
-            />
           </Box>
         </PageContent>
       </Page>
@@ -136,84 +140,74 @@ const MoveList = (
   const historyRows = () => {
     let rows = [];
     for(let t = 0, i = 0; i < history.length; t++, i += 2){
-      let cells = [];
-      cells.push(<TableCell>
-        { i + 1}
-      </TableCell>);
+      let turns = [];
 
       const isLightMoveCurrent = current === i;
       const lightMoveInner = history[i];
-      cells.push(
-        <TableCell
+      turns.push(
+        <span
           style={{
             backgroundColor: isLightMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
         >
           <Button onClick={() => onMoveClick(i)}> {lightMoveInner} </ Button>
-        </TableCell>);
+        </span>);
+
+      turns.push(' ');
 
       const isDarkMoveCurrent = current === i + 1;
       const darkMoveInner = history[i + 1] || null;
-      cells.push(
-        <TableCell
+      turns.push(
+        <span
           style={{
             backgroundColor: isDarkMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
         >
           <Button onClick={() => onMoveClick(i + 1)}> {darkMoveInner} </ Button>
-        </TableCell>);
+        </span>);
 
       const containsCurrent = isLightMoveCurrent || isDarkMoveCurrent;
       rows.push(
-              <TableRow
+              <span
+                key={`turn-${i}`}
                 style={{
+                  display: 'inline-block',
+                  whiteSpace: 'pre',
                   backgroundColor: containsCurrent ? 'var(--light-4)' : 'white',
                 }}
               >
-                {cells}
-              </TableRow>
+               <span style={{color: 'var(--dark-6)'}}>{ i + 1}. </span>{turns}
+              </span>
           );
     }
-    return rows;
+    return <p>{rows}</p>;
   }
 
   return (
-    <Box>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableCell scope="col">
-                <strong>Turn</strong>
-              </TableCell>
-              <TableCell scope="col">
-                <strong>Light Turn</strong>
-              </TableCell>
-              <TableCell scope="col">
-                <strong>Dark Turn</strong>
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-              { historyRows() }
-          </TableBody>
-        </Table>
-        <Box
-          justify='center'
-          border="top"
-          direction="row"
-          gap="small"
-          pad="xsmall"
-        >
-          <Button secondary 
-            label="<"
-            onClick={() => onPrevMove()}
-          />
-          <Button secondary 
-            label=">"
-            onClick={() => onNextMove()}
-          />
-        </Box>
+    <Box flex='grow'>
+      <h1> Moves </h1>
+      <Box
+        flex='grow'
+      >
+        { historyRows() }
       </Box>
+      <Box
+        justify='center'
+        border="top"
+        direction="row"
+        gap="small"
+        pad="xsmall"
+      >
+        <Button secondary 
+          label="<"
+          onClick={() => onPrevMove()}
+        />
+        <Button secondary 
+          label=">"
+          onClick={() => onNextMove()}
+        />
+      </Box>
+    </Box>
   );
 }
 
@@ -250,9 +244,7 @@ const Board = ({ boardState }) => {
   }
 
   return (
-  <div className='boardDiv'>
-     <table className='board'><tbody>{ boardElements }</tbody></table>
-   </div>
+   <table className='board'><tbody>{ boardElements }</tbody></table>
   );
 }
 
