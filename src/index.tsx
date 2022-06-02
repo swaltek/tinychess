@@ -1,14 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
-import { Grommet, Page, PageContent } from 'grommet';
-
-import { Grid, Box, Button } from 'grommet';
-
+import { Grommet, Page, PageContent, Box } from 'grommet';
 import { Chess } from 'chess.js';
-
-import Piece from './piece';
-import './board.css';
+import Board from './components/board';
+import MoveList from './components/movelist';
 
 const PGN_SAMPLE = [
   '[Event "F/S Return Match"]',
@@ -17,7 +13,7 @@ const PGN_SAMPLE = [
   '[Round "29"]',
   '[White "Fischer, Robert J."]',
   '[Black "Spassky, Boris V."]',
-  '[Result "1/2-1/2"',
+  '[Result "1/2-1/2"]',
   '',
   '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 {This opening is called the Ruy Lopez.}',
   '4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 10. d4 Nbd7',
@@ -28,7 +24,6 @@ const PGN_SAMPLE = [
   '35. Ra7 g6 36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5 40. Rd6 Kc5 41. Ra6',
   'Nf2 42. g4 Bd3 43. Re6 1/2-1/2',
 ];
-
 const PGN_SAMPLE_2 = [
     '[Event "Casual Game"]',
     '[Site "Berlin GER"]',
@@ -49,8 +44,6 @@ const PGN_SAMPLE_2 = [
     'Rg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8',
     '23.Bd7+ Kf8 24.Bxe7# 1-0'
 ];
-
-
 
 const App = () => {
   const [current, setCurrent] = useState(null);
@@ -129,123 +122,6 @@ const App = () => {
       </Page>
     </Grommet>
   )
-}
-
-const MoveList = (
-  {history, current,
-    onNextMove = () => {},
-    onPrevMove = () => {},
-    onMoveClick = (_: number ) => {}
-  }) => {
-  const historyRows = () => {
-    let rows = [];
-    for(let t = 0, i = 0; i < history.length; t++, i += 2){
-      let turns = [];
-
-      const isLightMoveCurrent = current === i;
-      const lightMoveInner = history[i];
-      turns.push(
-        <span
-          style={{
-            backgroundColor: isLightMoveCurrent ? 'var(--dark-6)' : 'inherit',
-          }}
-        >
-          <Button onClick={() => onMoveClick(i)}> {lightMoveInner} </ Button>
-        </span>);
-
-      turns.push(' ');
-
-      const isDarkMoveCurrent = current === i + 1;
-      const darkMoveInner = history[i + 1] || null;
-      turns.push(
-        <span
-          style={{
-            backgroundColor: isDarkMoveCurrent ? 'var(--dark-6)' : 'inherit',
-          }}
-        >
-          <Button onClick={() => onMoveClick(i + 1)}> {darkMoveInner} </ Button>
-        </span>);
-
-      const containsCurrent = isLightMoveCurrent || isDarkMoveCurrent;
-      rows.push(
-              <span
-                key={`turn-${i}`}
-                style={{
-                  display: 'inline-block',
-                  whiteSpace: 'pre',
-                  backgroundColor: containsCurrent ? 'var(--light-4)' : 'white',
-                }}
-              >
-               <span style={{color: 'var(--dark-6)'}}>{ i + 1}. </span>{turns}
-              </span>
-          );
-    }
-    return <p>{rows}</p>;
-  }
-
-  return (
-    <Box flex='grow'>
-      <h1> Moves </h1>
-      <Box
-        flex='grow'
-      >
-        { historyRows() }
-      </Box>
-      <Box
-        justify='center'
-        border="top"
-        direction="row"
-        gap="small"
-        pad="xsmall"
-      >
-        <Button secondary 
-          label="<"
-          onClick={() => onPrevMove()}
-        />
-        <Button secondary 
-          label=">"
-          onClick={() => onNextMove()}
-        />
-      </Box>
-    </Box>
-  );
-}
-
-const Board = ({ boardState }) => {
-  const board = boardState || new Chess().board();
-
-  let boardElements = [];
-  let columnLabels = [];
-  columnLabels.push(<th key="LabelCol"> </th>); // empty column where row labels will be
-  for(let col = 0; col < 8; col++) {
-    const colChar = String.fromCharCode( 'A'.charCodeAt(0) + col );
-    columnLabels.push(<th key={`${colChar}-LabelCol`}>{ colChar }</th>);
-  }
-  boardElements.push( <tr key="colLabels">{ columnLabels }</tr> );
-
-  for(let row = 0; row < 8; row++) {
-    let rowElements = [];
-    rowElements.push( <th key={`${ 8 - row }-LabelRow`}>{ 8 - row }</th> );
-    for(let col = 0; col < 8; col++) {
-      const square = board[row][col];
-      const element = square
-        ? <Piece
-            key={square.square} 
-            type={ square.color === 'w' ? square.type.toUpperCase() : square.type } />
-        : <></>;
-      rowElements.push(
-        <td
-          key={square ? square.square : row + ( 8 * col)}
-          className={`square ${(col + row % 2) % 2 ? 'dark' : 'light'}` } >
-          {element}
-        </td>);
-    }
-    boardElements.push( <tr key={`${row}-Row`}>{ rowElements }</tr> );
-  }
-
-  return (
-   <table className='board'><tbody>{ boardElements }</tbody></table>
-  );
 }
 
 const container =  document.getElementById('app');
