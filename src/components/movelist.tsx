@@ -18,6 +18,7 @@ const MoveList = (
           style={{
             backgroundColor: isLightMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
+          key={ `turn-light-${t}` }
         >
           <Button onClick={() => onMoveClick(i)}> {lightMoveInner} </ Button>
         </span>);
@@ -31,6 +32,7 @@ const MoveList = (
           style={{
             backgroundColor: isDarkMoveCurrent ? 'var(--dark-6)' : 'inherit',
           }}
+          key={ `turn-dark-${t}` }
         >
           <Button onClick={() => onMoveClick(i + 1)}> {darkMoveInner} </ Button>
         </span>);
