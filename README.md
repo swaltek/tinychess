@@ -1,2 +1,2 @@
 # Tiny Chess
-A lil chess web app built using react!
+A little chess web app built using react!
